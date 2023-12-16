@@ -1,29 +1,42 @@
 <script lang="ts">
-  import { io } from 'socket.io-client';
-
+	import { browser } from '$app/environment';
   import Clock from '$lib/Clock.svelte';
 
-  const socket = io();
-
-  const start = () => socket.emit('start');
-  const stop = () => socket.emit('stop');
+  const start = () => fetch('/api/clock/start');
+  const stop = () => fetch('/api/clock/stop');
 
   let day = 1;
   let hour = 0;
   let minutes = 0;
   let seconds = 0;
   const setTime = () => {
-    socket.emit('setTime', { day, hour, minutes, seconds });
+    // fetch('/api/clock', { day, hour, minutes, seconds });
+    fetch('/api/clock', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ day, hour, minutes, seconds })
+    });
   }
 
   let speed = 1;
   let remoteSpeed = 1;
   const setSpeed = () => {
-    socket.emit('setSpeed', speed);
+    fetch('/api/clock/speed', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ speed })
+    });
   };
-  socket.on('syncSpeed', remoteSpeedTmp => {
-    remoteSpeed = remoteSpeedTmp;
-  });
+  if (browser) {
+    setInterval(async () => {
+      const data = await fetch('/api/clock/speed').then(res => res.json()).catch(error => console.error(error));
+      remoteSpeed = data.speed;
+    }, 1000);
+  }
 </script>
 
 <h1>
