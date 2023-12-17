@@ -15,21 +15,30 @@
 
   if (browser) {
     setInterval(async () => {
-      const data = await fetch('/api/clock').then(res => res.json()).catch(error => console.error(error));
-      const valueArray = [];
+      const data = await fetch('/api/clock')
+        .then(res => res.json())
+        .catch(error => console.error(error));
+      console.log(data);
+      const currentTime = typeof data?.pausedAt === 'number' && data.pausedAt === -1 ? Date.now() : new Date(data.pausedAt).getTime();
+      const time = new Date((currentTime - data.startedAt) % 86400000);
+      const currentDay = Math.floor((Date.now() - data.startedAt) / 86400000);
+      const tempArray = [];
       if (day) {
-        valueArray.push(`${data.day}`);
+        tempArray.push(currentDay);
       }
       if (hour) {
-        valueArray.push(`${pad(data.hour)}`);
+        tempArray.push(time.getUTCHours());
       }
       if (minutes) {
-        valueArray.push(`${pad(data.minutes)}`);
+        tempArray.push(time.getUTCMinutes());
       }
       if (seconds) {
-        valueArray.push(`${pad(data.seconds)}`);
+        tempArray.push(time.getUTCSeconds());
       }
-      value = valueArray.join(':');
+      value = tempArray.map(pad).join(':');
+      if (speed) {
+        value += ` (${data.speed}x)`;
+      }
     }, 1000);
   }
 </script>
