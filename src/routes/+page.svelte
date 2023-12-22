@@ -1,46 +1,49 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-  import Clock from '$lib/Clock.svelte';
 
-  const start = () => fetch('/api/clock/start');
-  const stop = () => fetch('/api/clock/stop');
+  let time = '0000:00:00:00';
+
+  const start = () => fetch('/api/clock/start', { method: 'POST' });
+  const stop = () => fetch('/api/clock/stop', { method: 'POST' });
 
   let day = 1;
   let hour = 0;
   let minutes = 0;
   let seconds = 0;
   const setTime = () => {
-    // fetch('/api/clock', { day, hour, minutes, seconds });
-    fetch('/api/clock', {
+    fetch('/api/clock/set', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ day, hour, minutes, seconds })
+      body: JSON.stringify({
+        time: (day - 1) * 24 * 60 * 60 + hour * 60 * 60 + minutes * 60 + seconds,
+      }),
     });
   }
 
   let speed = 1;
   let remoteSpeed = 1;
   const setSpeed = () => {
-    fetch('/api/clock/speed', {
+    fetch('/api/clock/set', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ speed })
+      body: JSON.stringify({ speed }),
     });
   };
   if (browser) {
     setInterval(async () => {
-      const data = await fetch('/api/clock/speed').then(res => res.json()).catch(error => console.error(error));
+      const data = await fetch('/api/clock').then(res => res.json()).catch(error => console.error(error));
+      time = data.timeAsText;
       remoteSpeed = data.speed;
     }, 1000);
   }
 </script>
 
 <h1>
-  <Clock day hour minutes seconds />
+  {time}
 </h1>
 
 Speed: {remoteSpeed}
