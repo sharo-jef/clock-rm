@@ -5,5 +5,11 @@
 ## Development
 
 ```
-vercel dev
+npm run dev
+```
+
+## Production
+
+```
+docker compose up -d --build
 ```
